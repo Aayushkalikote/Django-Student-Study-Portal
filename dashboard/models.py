@@ -13,3 +13,14 @@ class Notes(models.Model):
     class Meta:
         verbose_name="notes"
         verbose_name_plural="notes"
+        
+class Homeworks(models.Model):
+    user=models.ForeignKey(User , on_delete=models.CASCADE)
+    subject=models.CharField(max_length=50)
+    title=models.CharField(max_length=50)
+    description=models.TextField()
+    due=models.DateTimeField()
+    is_finished=models.BooleanField(default=False)    
+    class Meta:
+        verbose_name="homeworks"
+        verbose_name_plural="homeworks"
