@@ -24,3 +24,14 @@ class Homeworks(models.Model):
     class Meta:
         verbose_name="homeworks"
         verbose_name_plural="homeworks"
+
+    
+class Todos(models.Model):
+    user=models.ForeignKey(User , on_delete=models.CASCADE)
+    title=models.CharField(max_length=50)
+    is_finished=models.BooleanField(default=False) 
+    def _str_(self):
+        return self.title   
+    class Meta:
+        verbose_name="todos"
+        verbose_name_plural="todos"

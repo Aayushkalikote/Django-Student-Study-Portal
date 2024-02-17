@@ -2,7 +2,8 @@ from django.shortcuts import render
 from . forms import *
 from django.contrib import messages
 from django.shortcuts import redirect
-# Create your views here.
+from youtubesearchpython import VideosSearch
+
 def home(request):
     return render(request,'dashboard/home.html')
 
@@ -71,3 +72,102 @@ def homework(request):
         'form':form,
         }
     return render(request,'dashboard/homework.html',context)
+
+def update_homework(request,pk=None):
+    homework=Homeworks.objects.get(id=pk)
+    if homework.is_finished == True:
+        homework.is_finished=False
+    else:
+        homework.is_finished=True
+    homework.save()
+    messages.success(request,f"Homework Status Updated Successfully!")
+    return redirect('homeworks') 
+
+def delete_homework(request,pk=None):
+    homework=Homeworks.objects.get(id=pk)
+    homework.delete()
+    messages.success(request,f"Homework Deleted Successfully!")
+    return redirect('homeworks') 
+
+def youtube(request):
+    if request.method == 'POST':  
+        form = DashboardForm(request.POST)
+        if form.is_valid():
+            text = form.cleaned_data['text']
+            video = VideosSearch(text, limit=10)
+            result_list = []
+            for i in video.result()['result']:
+                result_dict = {
+                    'input': text,
+                    'title': i['title'],
+                    'duration': i['duration'],
+                    'thumbnails': i['thumbnails'][0]['url'],
+                    'channel': i['channel']['name'],
+                    'link': i['link'],
+                    'views': i['viewCount']['short'],
+                    'published': i['publishedTime']
+                }
+                desc = ''
+                if i['descriptionSnippet']:
+                    for j in i['descriptionSnippet']:
+                        desc += j['text']
+                result_dict['description'] = desc
+                result_list.append(result_dict)
+            messages.success(request, "Youtube Search Successful!")
+            context = {
+                'form': form,
+                'results': result_list
+            }
+            return render(request, 'dashboard/youtube.html', context)
+    else:
+        form = DashboardForm()
+    context = {'form': form}
+    return render(request, 'dashboard/youtube.html', context)
+def todo(request):
+    if request.method=='POST':
+        form = TodosForm(request.POST)
+        if form.is_valid():
+            try:
+                finished=request.POST['is_finished']
+                if finished=='on':
+                    finished = True
+                else:
+                    finished=False
+            except:
+                finished=False
+            todos = Todos(
+                user=request.user,
+                title=request.POST['title'],
+                is_finished=finished
+            )
+            todos.save()
+            messages.success(request,f"Todos Added from{request.user.username} Successfully!")
+            return redirect('todos') 
+    else:    
+        form = TodosForm()
+    todos=Todos.objects.filter(user=request.user)
+    if len(todos)==0:
+        todo_complete = True
+    else:
+        todo_complete = False
+    context={
+        'form':form,
+        'todo_complete':todo_complete,
+        'todos':todos
+    }
+    return render(request,"dashboard/todo.html",context)
+def update_todo(request,pk=None):
+    todo=Todos.objects.get(id=pk)
+    if todo.is_finished == True:
+        todo.is_finished=False
+    else:
+        todo.is_finished=True
+    todo.save()
+    messages.success(request,f"Todo Status Updated Successfully!")
+    return redirect('todos') 
+def delete_todo(request,pk=None):
+    todo=Todos.objects.get(id=pk)
+    todo.delete()
+    messages.success(request,f"Todo Deleted Successfully!")
+    return redirect('todos') 
+    

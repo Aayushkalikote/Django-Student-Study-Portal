@@ -15,3 +15,11 @@ class HomeworksForm(forms.ModelForm):
         model =Homeworks
         widgets = {'due': DateInput()}
         fields = ['subject','title','description','due','is_finished']
+class DashboardForm(forms.Form):
+    text=forms.CharField(max_length=100,label="Enter Your Search :")
+    
+class TodosForm(forms.ModelForm):
+    class Meta:
+        model=Todos
+        fields=['title','is_finished']
+            
